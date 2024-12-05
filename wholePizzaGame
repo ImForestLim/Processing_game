@@ -1,0 +1,185 @@
+import java.util.Collections; // Collections 클래스를 사용
+import java.util.ArrayList;   // ArrayList를 사용
+
+int[] pizzaValues = new int[8];  // 피자 도형의 값을 저장할 배열
+ArrayList<Pizza> pizzas = new ArrayList<Pizza>();  // 피자 객체를 저장할 리스트
+ArrayList<Pizza> touchedPizzas = new ArrayList<Pizza>();  // 터치된 피자들을 저장
+
+long gameStartTime;  // 게임 시작 시간을 저장할 변수
+boolean gameOver = false;  // 게임 오버 상태
+int removedPizzaCount = 0;  // 사라진 피자 개수 카운트
+
+// Pizza 클래스 정의
+class Pizza {
+  float x, y;    // 피자 위치
+  float scale;   // 피자 크기
+  int value;     // 피자 값
+
+  Pizza(float x, float y, float scale, int value) {
+    this.x = x;
+    this.y = y;
+    this.scale = scale;
+    this.value = value;
+  }
+
+  // 피자 도형이 클릭된 위치에 있는지 확인하는 함수
+  boolean isClicked(float mx, float my) {
+    float diameter = 300 * scale;
+    float distance = dist(mx, my, x, y);  // 마우스와 피자 중심 간 거리
+    return distance < diameter / 2;
+  }
+
+  // 피자 그리기 함수
+  void draw() {
+    switch (value) {
+      case 1: pizza1(scale, x, y); break;
+      case 2: pizza2(scale, x, y); break;
+      case 3: pizza3(scale, x, y); break;
+      case 4: pizza4(scale, x, y); break;
+      case 5: pizza5(scale, x, y); break;
+      case 6: pizza6(scale, x, y); break;
+      case 7: pizza7(scale, x, y); break;
+      case 8: pizza8(scale, x, y); break;
+    }
+  }
+}
+
+void setup() {
+  size(1200, 800);
+  background(#FFDDDD);  // 분홍색 배경
+
+  startGame();  // 게임 시작 함수 호출
+}
+
+void draw() {
+  background(#FFDDDD);  // 분홍색 배경
+  
+  // 안내문을 화면 상단에 표시
+  fill(0);
+  textSize(24);
+  textAlign(CENTER, TOP);
+  text("You only have 20 seconds! \n Click two or more pizzas to make a whole pizza!", width / 2, 20);
+
+  if (gameOver) {
+    // 게임 오버 상태일 때
+    fill(0);
+    textSize(48);
+    textAlign(CENTER, CENTER);
+    text("GAME OVER! \n SCORE: " + removedPizzaCount, width / 2, height / 2);  // 스코어 출력
+
+    // Retry 버튼 그리기
+    fill(255, 0, 0);  // 빨간색 배경
+    rect(width / 2 - 100, height / 2 + 60, 200, 50);  // 버튼
+    fill(255);  // 흰색 텍스트
+    textSize(32);
+    text("Retry", width / 2, height / 2 + 90);  // 버튼 텍스트
+    return;  // 게임 오버 상태에서 더 이상 그리지 않음
+  }
+  
+  // 20초 경과 후 게임 종료 처리
+  if (millis() - gameStartTime > 20000) {  // 20초가 경과하면
+    gameOver = true;
+    return;
+  }
+
+  // 피자 그리기
+  for (Pizza pizza : pizzas) {
+    pizza.draw();
+  }
+
+  // 터치된 피자들의 값이 8이 되었을 때 사라지기
+  if (getTouchedPizzaSum() == 8) {
+    for (Pizza pizza : touchedPizzas) {
+      pizzas.remove(pizza);  // 피자 리스트에서 제거
+      removedPizzaCount++;   // 사라진 피자 개수 카운트
+    }
+    touchedPizzas.clear();  // 터치된 피자 리스트 초기화
+  }
+}
+
+// 마우스 클릭 처리
+void mousePressed() {
+  if (gameOver) {
+    // Retry 버튼 클릭 시 게임 초기화
+    if (mouseX > width / 2 - 100 && mouseX < width / 2 + 100 &&
+        mouseY > height / 2 + 60 && mouseY < height / 2 + 110) {
+      startGame();  // 게임 시작 함수 호출
+    }
+    return;  // 게임 오버 상태에서 마우스 클릭 이벤트 처리 종료
+  }
+
+  // 클릭된 피자 찾기
+  for (Pizza pizza : pizzas) {
+    if (pizza.isClicked(mouseX, mouseY)) {
+      if (!touchedPizzas.contains(pizza)) {
+        touchedPizzas.add(pizza);  // 터치된 피자 리스트에 추가
+      }
+    }
+  }
+}
+
+// 게임 초기화 함수
+void startGame() {
+  gameOver = false;  // 게임 오버 상태 초기화
+  removedPizzaCount = 0;  // 사라진 피자 개수 초기화
+  pizzas.clear();  // 피자 리스트 초기화
+  touchedPizzas.clear();  // 터치된 피자 리스트 초기화
+  
+  // 게임 시작 시간 기록
+  gameStartTime = millis();
+  
+  // 피자 배치하기
+  int rows = 8; // 행
+  int cols = 5; // 열
+  int numPizzas = 8; // 피자 종류의 개수
+  
+  // 피자 크기 비율 (scale)
+  float scale = 0.18; // 예: 크기를 절반으로 설정
+  
+  // pizzaTypes 배열 생성 (각 피자에 대한 인덱스를 저장)
+  int[] pizzaTypes = new int[rows * cols];
+  for (int i = 0; i < pizzaTypes.length; i++) {
+    pizzaTypes[i] = i % numPizzas; // 피자 종류 8개를 반복해서 배치
+  }
+  
+  // ArrayList로 변환하여 shuffle() 사용
+  ArrayList<Integer> pizzaTypesList = new ArrayList<Integer>();
+  for (int i = 0; i < pizzaTypes.length; i++) {
+    pizzaTypesList.add(pizzaTypes[i]); // 배열을 ArrayList로 추가
+  }
+  
+  // ArrayList 섞기
+  Collections.shuffle(pizzaTypesList); // ArrayList를 섞기
+  
+  // 배열로 다시 변환
+  for (int i = 0; i < pizzaTypes.length; i++) {
+    pizzaTypes[i] = pizzaTypesList.get(i); // 섞인 ArrayList를 배열로 복사
+  }
+
+  // 피자 배치하기
+  float offsetX = width / cols * 0.4; // 각 열 간격
+  float offsetY = height / rows * 0.7; // 각 행 간격
+  
+  // 피자들이 중앙에 오도록 배치
+  float startX = (width - offsetX * cols) / 2; 
+  float startY = (height - offsetY * rows) / 2; 
+  
+  for (int i = 0; i < rows; i++) {
+    for (int j = 0; j < cols; j++) {
+      float x = startX + j * offsetX + offsetX / 2;
+      float y = startY + i * offsetY + offsetY / 2;
+      int pizzaIndex = pizzaTypes[i * cols + j];
+      Pizza pizza = new Pizza(x, y, scale, pizzaIndex + 1);  // 피자 객체 생성
+      pizzas.add(pizza);  // 피자 리스트에 추가
+    }
+  }
+}
+
+// 터치된 피자들의 값 합산
+int getTouchedPizzaSum() {
+  int sum = 0;
+  for (Pizza pizza : touchedPizzas) {
+    sum += pizza.value;
+  }
+  return sum;
+}
