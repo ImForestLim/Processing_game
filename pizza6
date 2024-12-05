@@ -1,0 +1,40 @@
+void pizza6(float scale, float x, float y) {
+  pushMatrix();
+  translate(x, y);
+  
+  // 피자 경계선 
+  stroke(0); // 경계선 색상
+  strokeWeight(2); 
+  fill(255, 204, 0); // 피자 크러스트 색상
+  float diameter = 300 * scale; // 피자 크기 조정
+  
+  // 6개의 45도씩 나누어진 조각을 그리기
+  for (int i = 0; i < 6; i++) {
+    float startAngle = i * PI / 4; // 각 조각의 시작 각도
+    arc(0, 0, diameter, diameter, startAngle, startAngle + PI / 4, PIE); // 각 조각 그리기
+  }
+  
+  // 토마토 소스 
+  fill(#FF3232); // 토마토 소스 색상
+  stroke(0);
+  float tomatoDiameter = diameter * 0.9; // 피자 크기의 90%로 소스 크기 설정
+  
+  // 6개의 45도씩 나누어진 토마토 소스를 그리기
+  for (int i = 0; i < 6; i++) {
+    float startAngle = i * PI / 4; // 각 조각의 시작 각도
+    arc(0, 0, tomatoDiameter, tomatoDiameter, startAngle, startAngle + PI / 4, PIE); // 토마토 소스 그리기
+  }
+  
+  // 페퍼로니 추가 
+  fill(#960707); // 페퍼로니 색상
+  float pepperoniRadius = 35 * scale; // 페퍼로니 크기 조정
+  
+  // 각 조각에 하나씩 페퍼로니를 그리기
+  for (int i = 0; i < 6; i++) {
+    float angle = (i * PI / 4) + PI / 8; // 페퍼로니의 위치 각도
+    float pepperoniX = (diameter / 4) * cos(angle); // 페퍼로니의 x 위치
+    float pepperoniY = (diameter / 4) * sin(angle); // 페퍼로니의 y 위치
+    ellipse(pepperoniX, pepperoniY, pepperoniRadius, pepperoniRadius); 
+  }
+    popMatrix();
+}
