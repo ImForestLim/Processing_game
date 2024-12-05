@@ -113,6 +113,11 @@ void mousePressed() {
     if (pizza.isClicked(mouseX, mouseY)) {
       if (!touchedPizzas.contains(pizza)) {
         touchedPizzas.add(pizza);  // 터치된 피자 리스트에 추가
+        
+                if (getTouchedPizzaSum() > 8) {
+          gameOver = true;  // 게임 오버 상태로 전환
+          return;  // 게임 종료
+        }
       }
     }
   }
